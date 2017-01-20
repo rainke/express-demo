@@ -29,6 +29,7 @@ app.use('/', require('./routers/main'));
 //     }
 // });
 
+// require('./mysql');
 
 
 app.use((req, res) => {

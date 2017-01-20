@@ -12,11 +12,13 @@
 		<br>
 		密码：<input type="password" name="password">
 		<br>
+		<!--<input type="file" name="file" accept="application/vnd.ms-excel">-->
+		<input type="file" name="file" accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
 		<input type="submit" value="确定">
 	</form>
 
 	{{email}} {{name}} {{id}}
-	<embed width="100%" height="1000" name="plugin" id="plugin" src="/static/a.pdf" type="application/pdf" internalinstanceid="34" title="a">
+	<!--<embed width="100%" height="1000" name="plugin" id="plugin" src="/static/a.pdf" type="application/pdf" internalinstanceid="34" title="a">-->
 	<script type="text/javascript">
 		const delay = http => new Promise((resolve, reject)=>{
 			http.onload = function(e){
@@ -35,6 +37,7 @@
 			
 		}
 		http.prototype.request = function(type, data, url){
+			
 			var xmlHttp = new XMLHttpRequest();
 			xmlHttp.open(type, url);
 			if(type.toUpperCase() === 'GET'){
@@ -45,24 +48,52 @@
 				search = search ? '?' + search : '';
 				xmlHttp.send(url + search);
 			} else {
-				xmlHttp.send(JSON.stringify(data));
+				if(typeof data === 'string') {
+					xmlHttp.send(JSON.stringify(data));
+				} else {
+					console.log(data)
+					xmlHttp.send(data);
+				}
+				
 			}
 			
 			return delay(xmlHttp);
 		}
 		http.prototype.put = function(url, data){
 			return this.request('put', data, url);
-		}  
+		}
 
 
 		var regeisterForm = document.forms['register'];
+		regeisterForm.file.addEventListener('change', e => {
+			const files = e.target.files[0];
+			const reader = new FileReader();
+			reader.onload = function(e) {
+				var rawData = reader.result;
+				var formData = new FormData(regeisterForm);
+				// formData.append('data', rawData);
+				new http().request('POST', formData, '/upload').then( res => {
+					alert('yes');
+				}, () => {
+					alert('no');
+				})
+			}
+			reader.readAsDataURL(files);
+		})
 		regeisterForm.addEventListener('submit', e => {
 			e.preventDefault();
 			var data = {
 				username:e.target.username.value,
 				password:e.target.password.value
 			};
-			new http().put('/api/user', data).then(res => console.log(res))
+			console.dir(e.target.file);
+			var fileReader = new FileReader();
+			fileReader.onload = function() {
+
+			}
+			fileReader.readAsDataURL(e.target.file.files[0]);
+
+			// new http().put('/api/user', data).then(res => console.log(res))
 		});
 	</script>
 </body>
